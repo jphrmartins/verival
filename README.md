@@ -93,16 +93,20 @@ Limites para operações com Saque e Deposito
 |-----------|---------|----------|---------| 
 | SILVER    | 0       | 1.000    | 0       |
 | SILVER    | 0       | 50.000   | 0       |
-| SILVER    | 0       | 250.000  | 0       |
+| SILVER    | 0       | 200.000  | 0       |
 | SILVER    | 0       | 0        | 10      |
+| SILVER    | 1000    | 0        | 500     |
+| SILVER    | 1000    | 0        | 1000    |
 | GOLD      | 50.000  | 0        | 25.001  |
-| GOLD      | 50.000  | 1000     | 25.001  |
+| GOLD      | 50.000  | 1000     | 0       |
 | GOLD      | 50.000  | 0        | 50.001  |
+| GOLD      | 50.000  | 0        | 50.000  |
 | GOLD      | 50.000  | 150000   | 0       |
 | PLATINUM  | 200.000 | 1000     | 0       |
 | PLATINUM  | 200.000 | 0        | 100.001 |
 | PLATINUM  | 200.000 | 0        | 200.001 |
 | PLATINUM  | 200.000 | 0        | 175.001 |
+| PLATINUM  | 200.000 | 0        | 200.000 |
 
 Limites para Criação da conta
 
@@ -110,16 +114,55 @@ Limites para Criação da conta
 |---------------|--------------|
 | "NOME_VALIDO" | "0"          |
 | "NOME_VALIDO" | "99999"      |
-| "NOME_VALIDO" | "99999-45"   |
-| "NOME_VALIDO" | "100000-01"  |
 | "NOME_VALIDO" | "999999-36"  |
 | "NOME_VALIDO" | "999999-54"  |
-| "NOME_VALIDO" | "999999 -54" |
 | "NOME_VALIDO" | "1000000-01" |
-| "NOM"         | "123456-21"  |
+| "NO"          | "123456-21"  |
 
 ---
 
 ### Ajustes da classe principal.
 
+Ao executar os testes para a criação da conta,
+Quando foi criada uma conta que possuia um número que não possuia "-" (traço)
+Foi apresentando um erro de logica.
+ao modificar o método ***verificaNome()*** para que validasse a existencia do traço
+e tamanho da string foi possível passar pelos testes de erro ao criar conta com erro no número.
 
+Ao realizar o teste para o deposito de 50.000 na conta Silver com o intuito de realizar
+o upgrade para GOLD, foi possivel ver que não foi aplicado o valor de 1% de rendimento
+nem a conta foi atualizada para GOLD.
+olhando o código, foi possivel ver que ao realizar o deposito, ele apenas verificava o valor
+atual de saldo, e ignorava o novo valor, além disso, não era aplicado o rendimento junto ao deposito.
+
+Ao tentar executar o saque de um valor negativo, foi obtido um valor errado de acordo com as regras de negocio
+apresentadas.
+Analisando o código foi possivel encontrar a seguinte linha de código no método retirada:
+`if (valor <= 0.0) { return true; }`. Com isso, era possivel realizar a retirada de valores negativos.
+Ajustando para `if (valor <= 0.0) { return false; }` foi possivel garantir o comportamento.
+
+Ao realizar um saque qualquer em uma conta, foi possivel notar que o retorno padrão de uma operação correta,
+estava sendo retornado o valor false ao invés de true.
+arrumando os ramos para devolver o valor true, conseguimos garantir o comportamento correto.
+
+Ao realizar o saque em conta gold, foi possivel notar que exisita alguma logica sendo aplicada ao valor a ser retirado.
+O saque, de não deve haver modificação no valor, portanto, ao realizar esse ajuste, 
+foi possivel garantir o comportamento correto.
+
+Ao realizar o deposito em uma conta gold, sem que haja o upgrade, o valor aplicado de rendimento
+estava sendo aplicado incorretamente.
+Ao invés de aplicar o valor de entrada mais 1% estava sendo aplicado somente 1% do valor de entrada
+
+Da mesma forma apresentada no Deposito, as validações não estavam levando em conta o valor ao ser retirada para saber
+se havia a necessidade de realizar o downgrade.
+por exemplo foi modificado `if (saldo < 25000)` para `if(saldo - valor < 25000)`
+assim sempre validando na entrada se existe o downgrade. 
+Além disso também foi notado que ao realizar o downgrade de Gold para Silver.
+O valor estava sendo aumentado ao saldo ao invés de diminuido.
+
+Ao tentar retirar, em uma conta Gold, um valor que deixasse o saldo negativo, o resultado foi informado como possível.
+Analisando o código, foi possivel notar que na regra de retirada, a validação para saldo negativo era exclusiva a
+categoria Silver, realizando o ajuste da seguinte forma
+Ajustado o if de `if(categoria == Categoria.SILVER && saldo - valor > 0)` para
+`if(saldo - valor >= 0)` e adicionando as regras de downgrade.
+Foi tambem ajustando para validar se o novoSaldo será negativo antes das outras validações

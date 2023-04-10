@@ -40,20 +40,20 @@ public class ContaMagica implements Conta {
         if (valor <= 0.0) {
             return false;
         }
-        if (categoria == Categoria.SILVER && saldo < 50000) {
+        if (categoria == Categoria.SILVER && saldo + valor < 50000) {
             saldo += valor;
             return true;
         }
-        if (categoria == Categoria.SILVER && saldo >= 50000) {
-            saldo += valor;
+        if (categoria == Categoria.SILVER && saldo + valor >= 50000) {
+            saldo += valor * 1.01;
             categoria = Categoria.GOLD;
             return true;
         }
-        if (categoria == Categoria.GOLD && saldo < 200000) {
-            saldo += valor * 0.01;
+        if (categoria == Categoria.GOLD && saldo + valor < 200000) {
+            saldo += valor * 1.01;
             return true;
         }
-        if (categoria == Categoria.GOLD && saldo >= 200000) {
+        if (categoria == Categoria.GOLD && saldo + valor >= 200000) {
             saldo += valor * 1.01;
             categoria = Categoria.PLATINUM;
             return true;
@@ -68,24 +68,32 @@ public class ContaMagica implements Conta {
     @Override
     public boolean retirada(double valor) {
         if (valor <= 0.0) {
+            return false;
+        }
+        double novoSaldo = saldo - valor;
+        if (novoSaldo < 0) return false;
+        if (categoria == Categoria.PLATINUM && novoSaldo > 100000) {
+            saldo -= valor;
             return true;
         }
-        if (categoria == Categoria.PLATINUM && saldo > 100000) {
-            saldo -= valor;
-        }
-        if (categoria == Categoria.PLATINUM && saldo < 100000) {
+        if (categoria == Categoria.PLATINUM && novoSaldo < 100000) {
             saldo -= valor;
             categoria = Categoria.GOLD;
+            return true;
         }
-        if (categoria == Categoria.GOLD && saldo > 25000) {
-            saldo -= valor * 0.025;
-        }
-        if (categoria == Categoria.GOLD && saldo <= 25000) {
-            saldo += valor * 0.01;
-            categoria = Categoria.SILVER;
-        }
-        if (categoria == Categoria.SILVER && saldo - valor > 0) {
+        if (categoria == Categoria.GOLD && novoSaldo > 25000) {
             saldo -= valor;
+            return true;
+        }
+        if (categoria == Categoria.GOLD && novoSaldo <= 25000) {
+            saldo -= valor;
+            categoria = Categoria.SILVER;
+            return true;
+        }
+        if (novoSaldo >= 0) {
+            saldo -= valor;
+            this.categoria = this.categoria == Categoria.PLATINUM ? Categoria.GOLD : Categoria.SILVER;
+            return true;
         }
         return false;
     }
@@ -97,6 +105,9 @@ public class ContaMagica implements Conta {
     }
 
     private void verificaNroConta(String numero) {
+        if (!numero.contains("-") || numero.contains("-") && numero.length() != 9 && numero.length() != 8) {
+            throw new IllegalNumberException();
+        }
         int posTraco = numero.indexOf('-');
         String nroStr = numero.substring(0, posTraco);
         int nroConta = Integer.parseInt(nroStr);
