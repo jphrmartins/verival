@@ -54,12 +54,12 @@ public class ContaMagica implements Conta {
             return true;
         }
         if (categoria == Categoria.GOLD && saldo + valor >= 200000) {
-            saldo += valor * 1.01;
+            saldo += valor * 1.025;
             categoria = Categoria.PLATINUM;
             return true;
         }
         if (categoria == Categoria.PLATINUM) {
-            saldo += valor * 1.02;
+            saldo += valor * 1.025;
             return true;
         }
         return false;
@@ -72,7 +72,7 @@ public class ContaMagica implements Conta {
         }
         double novoSaldo = saldo - valor;
         if (novoSaldo < 0) return false;
-        if (categoria == Categoria.PLATINUM && novoSaldo > 100000) {
+        if (categoria == Categoria.PLATINUM && novoSaldo >= 100000) {
             saldo -= valor;
             return true;
         }
@@ -81,11 +81,11 @@ public class ContaMagica implements Conta {
             categoria = Categoria.GOLD;
             return true;
         }
-        if (categoria == Categoria.GOLD && novoSaldo > 25000) {
+        if (categoria == Categoria.GOLD && novoSaldo >= 25000) {
             saldo -= valor;
             return true;
         }
-        if (categoria == Categoria.GOLD && novoSaldo <= 25000) {
+        if (categoria == Categoria.GOLD && novoSaldo < 25000) {
             saldo -= valor;
             categoria = Categoria.SILVER;
             return true;

@@ -127,6 +127,15 @@ public class ContaMagicaTest {
     }
 
     @Test
+    public void emContaGoldSaldoDe25000DeveAindaSerGold() {
+        conta.deposito(50000);
+        conta.retirada(500); // "ignorando" 1% de 50000 para execução correta dos testes.
+        Assertions.assertTrue(conta.retirada(25000));
+        Assertions.assertEquals(25000, conta.getSaldo());
+        Assertions.assertEquals(Categoria.GOLD, conta.getCategoria());
+    }
+
+    @Test
     public void emContaGoldRetiradaDeTodoDinheiroDeveHaverDowngrade() {
         conta.deposito(50000);
         conta.retirada(500); // "ignorando" 1% de 50000 para execução correta dos testes.
@@ -139,9 +148,8 @@ public class ContaMagicaTest {
         conta.deposito(50000);
         conta.retirada(500); // "ignorando" 1% de 50000 para execução correta dos testes.
         conta.deposito(150000);
-        Assertions.assertTrue(conta.deposito(1000));
         Assertions.assertEquals(Categoria.PLATINUM, conta.getCategoria());
-        Assertions.assertEquals(201025, conta.getSaldo());
+        Assertions.assertEquals(203750, conta.getSaldo());
     }
 
     @Test
@@ -150,8 +158,53 @@ public class ContaMagicaTest {
         conta.retirada(500); // "ignorando" 1% de 50.000 para execução correta dos testes.
         conta.deposito(150000);
         conta.retirada(3750); // "Ignorando 2.5% de 150.000 para execução correta dos testes
+        Assertions.assertTrue(conta.deposito(1000));
         Assertions.assertEquals(Categoria.PLATINUM, conta.getCategoria());
+        Assertions.assertEquals(201025, conta.getSaldo());
+    }
 
+    @Test
+    public void emContaPlatinumSaldoDe100000DeveAindaSerPlatinum() {
+        conta.deposito(50000);
+        conta.retirada(500); // "ignorando" 1% de 50.000 para execução correta dos testes.
+        conta.deposito(150000);
+        conta.retirada(3750); // "Ignorando 2.5% de 150.000 para execução correta dos testes
+        Assertions.assertTrue(conta.retirada(100000));
+        Assertions.assertEquals(Categoria.PLATINUM, conta.getCategoria());
+        Assertions.assertEquals(100000, conta.getSaldo());
+    }
+
+    @Test
+    public void emContaPlatinumSaldoAbaixoDe100000DeveAindaSerGold() {
+        conta.deposito(50000);
+        conta.retirada(500); // "ignorando" 1% de 50.000 para execução correta dos testes.
+        conta.deposito(150000);
+        conta.retirada(3750); // "Ignorando 2.5% de 150.000 para execução correta dos testes
+        Assertions.assertTrue(conta.retirada(100001));
+        Assertions.assertEquals(Categoria.GOLD, conta.getCategoria());
+        Assertions.assertEquals(99999, conta.getSaldo());
+    }
+
+    @Test
+    public void emContaPlatinumNaoDeveSerPermitidoSaldoNegativo() {
+        conta.deposito(50000);
+        conta.retirada(500); // "ignorando" 1% de 50.000 para execução correta dos testes.
+        conta.deposito(150000);
+        conta.retirada(3750); // "Ignorando 2.5% de 150.000 para execução correta dos testes
+        Assertions.assertFalse(conta.retirada(200001));
+        Assertions.assertEquals(Categoria.PLATINUM, conta.getCategoria());
+        Assertions.assertEquals(200000, conta.getSaldo());
+    }
+
+    @Test
+    public void emContaPlatinumDeveSerPermitidoSaldo0ComDowngradeParaGold() {
+        conta.deposito(50000);
+        conta.retirada(500); // "ignorando" 1% de 50.000 para execução correta dos testes.
+        conta.deposito(150000);
+        conta.retirada(3750); // "Ignorando 2.5% de 150.000 para execução correta dos testes
+        Assertions.assertTrue(conta.retirada(200000));
+        Assertions.assertEquals(Categoria.GOLD, conta.getCategoria());
+        Assertions.assertEquals(0, conta.getSaldo());
     }
 
     @Test
@@ -174,26 +227,5 @@ public class ContaMagicaTest {
                 Arguments.of("NO", "123456-21", IllegalNameException.class)
         );
     }
-
-    /*
-    | Categoria | Saldo   | Deposito | Saque   |
-|-----------|---------|----------|---------|
-| SILVER    | 0       | 1.000    | 0       | V
-| SILVER    | 0       | 50.000   | 0       | V
-| SILVER    | 0       | 200.000  | 0       | V
-| SILVER    | 0       | 0        | 10      | V
-| SILVER    | 1000    | 0        | 500     | V
-| SILVER    | 1000    | 0        | 1000    | V
-| GOLD      | 50.000  | 0        | 25.001  | V
-| GOLD      | 50.000  | 1000     | 0       | V
-| GOLD      | 50.000  | 0        | 50.001  | V
-| GOLD      | 50.000  | 0        | 50.000  | V
-| GOLD      | 50.000  | 150000   | 0       | V
-| PLATINUM  | 200.000 | 1000     | 0       |
-| PLATINUM  | 200.000 | 0        | 100.001 |
-| PLATINUM  | 200.000 | 0        | 200.001 |
-| PLATINUM  | 200.000 | 0        | 175.001 |
-| PLATINUM  | 200.000 | 0        | 200.000 |
-     */
 
 }

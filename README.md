@@ -98,14 +98,15 @@ Limites para operações com Saque e Deposito
 | SILVER    | 1000    | 0        | 500     |
 | SILVER    | 1000    | 0        | 1000    |
 | GOLD      | 50.000  | 0        | 25.001  |
+| GOLD      | 50.000  | 0        | 25.000  |
 | GOLD      | 50.000  | 1000     | 0       |
 | GOLD      | 50.000  | 0        | 50.001  |
 | GOLD      | 50.000  | 0        | 50.000  |
 | GOLD      | 50.000  | 150000   | 0       |
 | PLATINUM  | 200.000 | 1000     | 0       |
+| PLATINUM  | 200.000 | 0        | 100.000 |
 | PLATINUM  | 200.000 | 0        | 100.001 |
 | PLATINUM  | 200.000 | 0        | 200.001 |
-| PLATINUM  | 200.000 | 0        | 175.001 |
 | PLATINUM  | 200.000 | 0        | 200.000 |
 
 Limites para Criação da conta
@@ -148,6 +149,10 @@ arrumando os ramos para devolver o valor true, conseguimos garantir o comportame
 Ao realizar o saque em conta gold, foi possivel notar que exisita alguma logica sendo aplicada ao valor a ser retirado.
 O saque, de não deve haver modificação no valor, portanto, ao realizar esse ajuste, 
 foi possivel garantir o comportamento correto.
+Assim como foi possível notar que ao realizar o saldo no valor limite de 25000, este era reduzido a Silver
+de forma erronea.
+Analisando o código foi possível ver que as regras de limite estava invertidas.
+Da mesma forma ocorreu para as regras de Platinum.
 
 Ao realizar o deposito em uma conta gold, sem que haja o upgrade, o valor aplicado de rendimento
 estava sendo aplicado incorretamente.
@@ -166,3 +171,6 @@ categoria Silver, realizando o ajuste da seguinte forma
 Ajustado o if de `if(categoria == Categoria.SILVER && saldo - valor > 0)` para
 `if(saldo - valor >= 0)` e adicionando as regras de downgrade.
 Foi tambem ajustando para validar se o novoSaldo será negativo antes das outras validações
+
+Ao realizar o upgrade de GOLD para PLATINUM não estava sendo aplicado o rendimento correto.
+Assim como ao realizar o deposito em conta PLATINUM.
